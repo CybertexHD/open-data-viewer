@@ -1,3 +1,33 @@
+/* Grundlegende Stilsetzung */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+}
+
+/* Container für das Layout */
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    text-align: center;
+}
+
+/* Header-Styling */
+header {
+    background-color: #004080;
+    color: white;
+    padding: 20px;
+    width: 100%;
+    font-size: 2rem;
+    text-align: center;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Styling für den Upload-Bereich */
 .upload-container {
     margin: 20px;
     padding: 20px;
@@ -7,35 +37,82 @@
     display: inline-block;
     width: 300px;
     transition: transform 0.3s ease;
+    position: relative; /* Wichtig, damit der File-Input sich über das Container-Element erstreckt */
 }
 
 .upload-container:hover {
-    transform: scale(1.05);
+    transform: scale(1.05); /* Vergrößert den Upload-Bereich bei Hover */
 }
 
+/* Sicherstellen, dass der input[type="file"] unsichtbar ist */
 .upload-container input[type="file"] {
-    display: none; /* Versteckt den Standard-Upload-Button */
+    position: absolute; /* Überdeckt den gesamten Bereich */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0; /* Unsichtbar */
+    cursor: pointer; /* Zeigt an, dass der Bereich klickbar ist */
+    z-index: 2; /* Überlagert den grünen Text */
 }
 
-.upload-button {
+/* Visuelle Darstellung des Upload-Bereichs */
+.upload-container::before {
+    content: "Wählen Sie eine GeoJSON-Datei";
+    display: inline-block;
     padding: 12px 24px;
     background-color: #4CAF50;
     color: white;
-    border: none;
     border-radius: 8px;
     cursor: pointer;
     font-size: 16px;
     transition: background-color 0.3s ease;
+    z-index: 1; /* Damit der Text immer oben bleibt */
 }
 
-.upload-button:hover {
+.upload-container::before:hover {
     background-color: #45a049;
 }
 
+/* Styling für die Karte */
 .map {
-    width: 80%;
+    width: 90%;
     height: 500px;
     margin-top: 20px;
     border: 2px solid #ddd;
     border-radius: 8px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Styling für das Popup */
+.ol-popup {
+    position: absolute;
+    background-color: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    pointer-events: none;
+    max-width: 250px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    transform: translateY(-10px);
+}
+
+.ol-popup.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+/* Verschiebt die Zoom-Steuerung nach unten rechts */
+.ol-zoom {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    z-index: 999;
+}
+/* Wasserzeichen von OSM ausblenden */
+.ol-attribution {
+    display: none;
 }

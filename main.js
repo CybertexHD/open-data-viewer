@@ -105,5 +105,22 @@ function handleFileUpload(file) {
 
     reader.readAsText(file);
 }
+//Damit man nicht in der seite selber zoomen kann
+document.addEventListener("wheel", function (event) {
+    if (event.ctrlKey) {
+        event.preventDefault();
+    }
+}, { passive: false });
 
+osmLayer.set("visible", true); // Um das Wasserzeichen zu deaktivieren
 
+// Zoom-Steuerung mit einer benutzerdefinierten Position
+var zoomControl = new ol.control.Zoom({
+    target: document.getElementById('zoom-container') // Beispiel für das Ziel-Element
+});
+map.addControl(zoomControl);
+/*
+.ol-zoom {
+    display: none; // Zoom-Schaltflächen ausblenden
+}
+*/
