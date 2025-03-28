@@ -98,3 +98,13 @@ header {
     border-radius: 8px;
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
 }
+
+#zoom-container {
+    position: absolute;
+    bottom: 10px; /* Abstand vom unteren Rand */
+    left: 10px;   /* Abstand vom linken Rand */
+    z-index: 1000; /* Damit es oben bleibt */
+}
+.ol-control {
+    display: none !important;
+}

@@ -3,7 +3,9 @@ var map = new ol.Map({
     target: 'map', // Die ID des Containers, in dem die Karte gerendert wird
     layers: [
         new ol.layer.Tile({
-            source: new ol.source.OSM() // OpenStreetMap als Basiskarte
+            source: new ol.source.OSM({
+                attributions: []  // Deaktiviert das Wasserzeichen
+            }) // OpenStreetMap als Basiskarte
         })
     ],
     view: new ol.View({
@@ -13,7 +15,7 @@ var map = new ol.Map({
 });
 
 // Gemeinsame Quelle für alle Features
-var vectorSource = new ol.source.Vector(); // 🗂 Quelle für alle GeoJSON-Dateien
+var vectorSource = new ol.source.Vector(); // Quelle für alle GeoJSON-Dateien
 
 // Vektor-Layer für die Punkte
 var vectorLayer = new ol.layer.Vector({
@@ -89,11 +91,18 @@ document.addEventListener("wheel", function (event) {
     }
 }, { passive: false });
 
-// Zoom-Steuerung mit einer benutzerdefinierten Position
-var zoomControl = new ol.control.Zoom({
-    target: document.getElementById('zoom-container') // Beispiel für das Ziel-Element
-});
+// Zoom-Steuerung hinzufügen
+var zoomControl = new ol.control.Zoom();
+
+// Entfernen der Standard-Zoom-Steuerung oben
+map.removeControl(map.getControls().getArray().find(control => control instanceof ol.control.Zoom));
+
+// Zoom-Steuerung unten links hinzufügen
 map.addControl(zoomControl);
 
-// (Optional) Sichtbarkeit des OSM-Wasserzeichens
-osmLayer.set("visible", true);
+// CSS für Zoom-Steuerung links unten positionieren
+var zoomElement = document.querySelector('.ol-zoom');
+zoomElement.style.position = 'absolute';
+zoomElement.style.bottom = '10px'; // Abstand vom unteren Rand
+zoomElement.style.left = '10px';   // Abstand vom linken Rand
+zoomElement.style.zIndex = '1000'; // Damit es oben bleibt
