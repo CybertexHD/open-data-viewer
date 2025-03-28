@@ -1,11 +1,41 @@
-body {
-    font-family: Arial, sans-serif;
-    text-align: center;
+.upload-container {
+    margin: 20px;
+    padding: 20px;
+    background-color: #fff;
+    border: 2px dashed #4CAF50;
+    border-radius: 8px;
+    display: inline-block;
+    width: 300px;
+    transition: transform 0.3s ease;
 }
 
-#map {
+.upload-container:hover {
+    transform: scale(1.05);
+}
+
+.upload-container input[type="file"] {
+    display: none; /* Versteckt den Standard-Upload-Button */
+}
+
+.upload-button {
+    padding: 12px 24px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+.upload-button:hover {
+    background-color: #45a049;
+}
+
+.map {
     width: 80%;
     height: 500px;
-    margin: 20px auto;
-    border: 2px solid black;
+    margin-top: 20px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
 }
