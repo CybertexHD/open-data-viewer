@@ -12,64 +12,10 @@ var map = new ol.Map({
     })
 });
 
-// Funktion, um GeoJSON-Dateien zu laden und auf der Karte anzuzeigen
-function handleFileUpload(file) {
-    var reader = new FileReader();
+// Gemeinsame Quelle für alle Features
+var vectorSource = new ol.source.Vector(); // 🗂 Quelle für alle GeoJSON-Dateien
 
-    reader.onload = function(event) {
-        // Die gelesenen GeoJSON-Daten
-        var geojsonData = event.target.result;
-
-        // GeoJSON in OpenLayers Features umwandeln
-        var format = new ol.format.GeoJSON();
-        var features = format.readFeatures(geojsonData, {
-            featureProjection: 'EPSG:3857' // Die Projektion auf die Karte (Web Mercator)
-        });
-
-        // Vektorquelle mit den Features erstellen
-        var vectorSource = new ol.source.Vector({
-            features: features
-        });
-
-        // Vektor-Layer mit der Vektorquelle
-        var vectorLayer = new ol.layer.Vector({
-            source: vectorSource
-        });
-
-        // Vektor-Layer zur Karte hinzufügen
-        map.addLayer(vectorLayer);
-
-        // Auf die gezeigten Features zoomen
-        map.getView().fit(vectorSource.getExtent(), {
-            padding: [50, 50, 50, 50]
-        });
-    };
-
-    // GeoJSON-Datei lesen
-    reader.readAsText(file);
-}
-
-// Event-Listener für die Auswahl der Datei
-document.getElementById('fileInput').addEventListener('change', function(event) {
-    var files = event.target.files;
-    
-    if (files.length === 0) {
-        alert('Bitte wähle mindestens eine GeoJSON-Datei aus!');
-        return;
-    }
-
-    for (let i = 0; i < files.length; i++) {
-        let file = files[i];
-        if (file.name.endsWith('.geojson')) {
-            handleFileUpload(file);  // Datei verarbeiten
-        } else {
-            alert(`Die Datei ${file.name} ist keine GeoJSON-Datei.`);
-        }
-    }
-});
-
-// Funktion, um GeoJSON-Dateien zu laden und auf der Karte anzuzeigen
-var vectorSource = new ol.source.Vector(); // 🗂 Gemeinsame Quelle für alle Dateien
+// Vektor-Layer für die Punkte
 var vectorLayer = new ol.layer.Vector({
     source: vectorSource,
     style: new ol.style.Style({
@@ -81,8 +27,9 @@ var vectorLayer = new ol.layer.Vector({
     })
 });
 
-map.addLayer(vectorLayer); // 🗺 Einmaliger Layer für alle Punkte
+map.addLayer(vectorLayer); // Ein Layer für alle Punkte zur Karte hinzufügen
 
+// Funktion zum Verarbeiten und Anzeigen der GeoJSON-Datei
 function handleFileUpload(file) {
     var reader = new FileReader();
 
@@ -91,12 +38,12 @@ function handleFileUpload(file) {
 
         var format = new ol.format.GeoJSON();
         var features = format.readFeatures(geojsonData, {
-            featureProjection: 'EPSG:3857'
+            featureProjection: 'EPSG:3857' // Projektion auf Web Mercator
         });
 
-        vectorSource.addFeatures(features); // 📌 Neue Features zur gemeinsamen Quelle hinzufügen
+        vectorSource.addFeatures(features); // Neue Features zur gemeinsamen Quelle hinzufügen
 
-        // 📍 Automatisches Zoomen auf alle geladenen Features
+        // Zoomen auf alle geladenen Features
         var extent = vectorSource.getExtent();
         if (!ol.extent.isEmpty(extent)) {
             map.getView().fit(extent, { padding: [50, 50, 50, 50], maxZoom: 15 });
@@ -105,22 +52,48 @@ function handleFileUpload(file) {
 
     reader.readAsText(file);
 }
-//Damit man nicht in der seite selber zoomen kann
+
+// Event-Listener für die Auswahl von Dateien
+document.getElementById('fileInput').addEventListener('change', function(event) {
+    var files = event.target.files;
+
+    if (files.length === 0) {
+        alert('Bitte wähle mindestens eine GeoJSON-Datei aus!');
+        return;
+    }
+
+    // Liste der Dateinamen nicht leeren, sondern nur neue Einträge hinzufügen
+    var fileNamesList = document.getElementById('fileNames');
+
+    for (let i = 0; i < files.length; i++) {
+        let file = files[i];
+        if (file.name.endsWith('.geojson')) {
+            handleFileUpload(file);  // Datei verarbeiten
+
+            // Füge den Dateinamen zur Liste hinzu (nur wenn der Name noch nicht vorhanden ist)
+            if (![...fileNamesList.children].some(item => item.textContent === file.name)) {
+                var li = document.createElement('li');
+                li.textContent = file.name; // Dateiname als Text
+                fileNamesList.appendChild(li); // Liste einfügen
+            }
+        } else {
+            alert(`Die Datei ${file.name} ist keine GeoJSON-Datei.`);
+        }
+    }
+});
+
+// Verhindern, dass der Benutzer durch die Karte mit Strg+Mausrad zoomt
 document.addEventListener("wheel", function (event) {
     if (event.ctrlKey) {
         event.preventDefault();
     }
 }, { passive: false });
 
-osmLayer.set("visible", true); // Um das Wasserzeichen zu deaktivieren
-
 // Zoom-Steuerung mit einer benutzerdefinierten Position
 var zoomControl = new ol.control.Zoom({
     target: document.getElementById('zoom-container') // Beispiel für das Ziel-Element
 });
 map.addControl(zoomControl);
-/*
-.ol-zoom {
-    display: none; // Zoom-Schaltflächen ausblenden
-}
-*/
+
+// (Optional) Sichtbarkeit des OSM-Wasserzeichens
+osmLayer.set("visible", true);

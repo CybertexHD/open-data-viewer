@@ -27,7 +27,7 @@ header {
     box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-/* Styling für den Upload-Bereich */
+/* Upload-Button */
 .upload-container {
     margin: 20px;
     padding: 20px;
@@ -44,7 +44,6 @@ header {
     transform: scale(1.05); /* Vergrößert den Upload-Bereich bei Hover */
 }
 
-/* Sicherstellen, dass der input[type="file"] unsichtbar ist */
 .upload-container input[type="file"] {
     position: absolute; /* Überdeckt den gesamten Bereich */
     top: 0;
@@ -53,66 +52,49 @@ header {
     height: 100%;
     opacity: 0; /* Unsichtbar */
     cursor: pointer; /* Zeigt an, dass der Bereich klickbar ist */
-    z-index: 2; /* Überlagert den grünen Text */
 }
 
-/* Visuelle Darstellung des Upload-Bereichs */
-.upload-container::before {
-    content: "Wählen Sie eine GeoJSON-Datei";
-    display: inline-block;
+/* Button-Text direkt im Button */
+.upload-button {
     padding: 12px 24px;
     background-color: #4CAF50;
     color: white;
     border-radius: 8px;
     cursor: pointer;
     font-size: 16px;
+    border: none; /* Keine Randlinie für den Button */
     transition: background-color 0.3s ease;
-    z-index: 1; /* Damit der Text immer oben bleibt */
 }
 
-.upload-container::before:hover {
+.upload-button:hover {
     background-color: #45a049;
+}
+
+/* Flexbox Container für die Karte und die Dateinamen */
+.map-container {
+    display: flex;
+    justify-content: center; /* Zentriert die Karte horizontal */
+    align-items: flex-start; /* Stellt sicher, dass beide Bereiche oben ausgerichtet sind */
+    gap: 20px; /* Abstand zwischen Karte und Dateinamen */
+    width: 90%;
+    margin-top: 20px;
 }
 
 /* Styling für die Karte */
 .map {
-    width: 90%;
+    width: 75%; /* Karte nimmt 75% der Breite ein */
     height: 500px;
-    margin-top: 20px;
     border: 2px solid #ddd;
     border-radius: 8px;
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
 }
 
-/* Styling für das Popup */
-.ol-popup {
-    position: absolute;
-    background-color: white;
-    padding: 15px;
+/* Styling für die Liste der Dateinamen */
+.file-list {
+    width: 25%; /* Dateinamen nehmen 25% der Breite ein */
+    padding: 10px;
+    background-color: #fff;
+    border: 2px solid #ddd;
     border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-    pointer-events: none;
-    max-width: 250px;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.3s ease, transform 0.3s ease;
-    transform: translateY(-10px);
-}
-
-.ol-popup.show {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
-}
-
-/* Verschiebt die Zoom-Steuerung nach unten rechts */
-.ol-zoom {
-    position: absolute;
-    bottom: 10px;
-    right: 10px;
-    z-index: 999;
-}
-/* Wasserzeichen von OSM ausblenden */
-.ol-attribution {
-    display: none;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
 }
