@@ -1,4 +1,7 @@
-/* Grundlegende Stilsetzung */
+/* ================================
+   🌐 Basis-Layout und Grundfarben
+   ================================ */
+
 body {
     font-family: 'Arial', sans-serif;
     background-color: #f4f4f4;
@@ -6,7 +9,9 @@ body {
     padding: 0;
 }
 
-/* Container für das Layout */
+/* ================================
+   📦 Haupt-Container zentriert alles
+   ================================ */
 .container {
     display: flex;
     flex-direction: column;
@@ -16,7 +21,9 @@ body {
     text-align: center;
 }
 
-/* Header-Styling */
+/* ================================
+   🧭 Header mit Titel
+   ================================ */
 header {
     background-color: #004080;
     color: white;
@@ -27,84 +34,193 @@ header {
     box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-/* Upload-Button */
+/* ================================
+   ⬆️ Upload-Bereich
+   ================================ */
 .upload-container {
     margin: 20px;
     padding: 20px;
     background-color: #fff;
-    border: 2px dashed #4CAF50;
+    border: 3px dashed #0066cc;
     border-radius: 8px;
     display: inline-block;
-    width: 300px;
+    width: 240px;
     transition: transform 0.3s ease;
-    position: relative; /* Wichtig, damit der File-Input sich über das Container-Element erstreckt */
+    position: relative;
 }
 
 .upload-container:hover {
-    transform: scale(1.05); /* Vergrößert den Upload-Bereich bei Hover */
+    transform: scale(1.05);
 }
 
 .upload-container input[type="file"] {
-    position: absolute; /* Überdeckt den gesamten Bereich */
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    opacity: 0; /* Unsichtbar */
-    cursor: pointer; /* Zeigt an, dass der Bereich klickbar ist */
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    opacity: 0;
+    cursor: pointer;
 }
 
-/* Button-Text direkt im Button */
+/* ================================
+    Button zum Auswählen
+   ================================ */
 .upload-button {
     padding: 12px 24px;
-    background-color: #4CAF50;
+    background-color: #004080;
     color: white;
     border-radius: 8px;
     cursor: pointer;
     font-size: 16px;
-    border: none; /* Keine Randlinie für den Button */
+    border: none;
     transition: background-color 0.3s ease;
 }
 
 .upload-button:hover {
-    background-color: #45a049;
+    background-color: #2384e5;
 }
 
-/* Flexbox Container für die Karte und die Dateinamen */
+/* ================================
+   🗺️ Karte und Dateiliste nebeneinander
+   ================================ */
 .map-container {
     display: flex;
-    justify-content: center; /* Zentriert die Karte horizontal */
-    align-items: flex-start; /* Stellt sicher, dass beide Bereiche oben ausgerichtet sind */
-    gap: 20px; /* Abstand zwischen Karte und Dateinamen */
+    justify-content: center;
+    align-items: flex-start;
+    gap: 20px;
     width: 90%;
     margin-top: 20px;
 }
 
-/* Styling für die Karte */
+/* ================================
+   🌍 Karte selbst
+   ================================ */
 .map {
-    width: 75%; /* Karte nimmt 75% der Breite ein */
+    width: 75%;
     height: 500px;
     border: 2px solid #ddd;
     border-radius: 8px;
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
 }
 
-/* Styling für die Liste der Dateinamen */
-.file-list {
-    width: 25%; /* Dateinamen nehmen 25% der Breite ein */
-    padding: 10px;
-    background-color: #fff;
-    border: 2px solid #ddd;
-    border-radius: 8px;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+/* ======================================
+   🔵 Stil für Datei-bezogene Icon-Buttons
+   ====================================== */
+.file-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px; /* Abstand zwischen Text und Buttons */
+    margin-bottom: 6px;
 }
 
+/* Container für Icons rechts neben dem Dateinamen */
+.file-list .action-icons {
+    display: flex;
+    gap: 6px;
+}
+
+/* Kleine Buttons im Icon-Stil */
+.file-list .layer-action-button {
+    background-color: #004080;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 12px; /* Kleinere Schriftgröße */
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.file-list .layer-action-button:hover {
+    background-color: #0066cc;
+}
+
+
+/* ================================
+   🔍 Zoom-Steuerung in der Ecke
+   ================================ */
 #zoom-container {
     position: absolute;
-    bottom: 10px; /* Abstand vom unteren Rand */
-    left: 10px;   /* Abstand vom linken Rand */
-    z-index: 1000; /* Damit es oben bleibt */
+    bottom: 10px;
+    left: 10px;
+    z-index: 1000;
 }
+
 .ol-control {
     display: none !important;
+}
+
+.file-list h3 {
+    margin-bottom: 12px;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 6px;
+    font-size: 1.1rem;
+}
+
+/* ================================
+   📤 Export-Button (Auswahl exportieren)
+   ================================ */
+#exportSelection {
+    padding: 14px 24px;
+    font-size: 16px;
+    background-color: #004080;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    width: 100%;
+    transition: background-color 0.3s ease;
+    margin-top: 16px;
+}
+
+#exportSelection:hover {
+    background-color: #0066cc;
+}
+
+/* Liste der Dateinamen zentrieren */
+.file-list ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+/* Einzelne Zeile: Dateiname + Icons */
+.file-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 0;
+}
+
+/* Text links, Buttons rechts */
+.file-list li span {
+    flex: 1;
+    text-align: left;
+    font-size: 14px;
+}
+
+/* Container für die Buttons (🗑️📤) */
+.file-list .action-icons {
+    display: flex;
+    gap: 6px;
+}
+
+/* Export-Button zentriert und gleich breit wie Liste */
+#exportSelection {
+    display: block;
+    width: 100%;
+    margin-top: 20px;
+    padding: 14px 24px;
+    font-size: 16px;
+    background-color: #004080;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#exportSelection:hover {
+    background-color: #0066cc;
 }

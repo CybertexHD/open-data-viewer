@@ -3,22 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GeoJSON Visualisierung</title>
+    <title>Open Data Viewer</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/ol@latest/dist/ol.js"></script>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>GeoJSON File Upload</h1>
+            <h1>Open Data Viewer</h1>
         </header>
 
         <!-- Upload-Button -->
         <div class="upload-container">
             <!-- Unsichtbares File-Input -->
-            <input type="file" id="fileInput" accept=".geojson" multiple style="display: none;"> <!-- Hier wird der Input unsichtbar gemacht -->
+            <input type="file" id="fileInput" accept=".geojson,.json,.kml,.gpx" multiple style="display: none;">
             <!-- Button, um den File-Input zu aktivieren -->
-            <button class="upload-button" onclick="document.getElementById('fileInput').click()">Wählen Sie eine GeoJSON-Datei</button>
+            <button class="upload-button" onclick="document.getElementById('fileInput').click()">Wählen Sie eine Datei aus</button>
         </div>
 
         <!-- Flexbox Container für Karte und Dateinamen -->
@@ -27,6 +27,9 @@
             <div class="file-list">
                 <h3>Hochgeladene Dateien:</h3>
                 <ul id="fileNames"></ul> <!-- Hier werden die Dateinamen angezeigt -->
+
+                <!-- 🔽 Neuer Button -->
+                <button id="exportSelection" class="export-button">📤 Auswahl exportieren</button>
             </div>
         </div>
 
