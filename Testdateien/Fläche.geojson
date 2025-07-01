@@ -1,0 +1,17 @@
+{
+  "type": "FeatureCollection",
+  "features": [{
+    "type": "Feature",
+    "properties": { "name": "Testpark Chemnitz" },
+    "geometry": {
+      "type": "Polygon",
+      "coordinates": [[
+        [12.9272, 50.8324],
+        [12.9282, 50.8324],
+        [12.9282, 50.8332],
+        [12.9272, 50.8332],
+        [12.9272, 50.8324]
+      ]]
+    }
+  }]
+}

@@ -1,0 +1,14 @@
+[
+  {
+    "name": "Chemnitz Hbf",
+    "latitude": 50.8323,
+    "longitude": 12.9253,
+    "info": "Testpunkt aus JSON-Datei"
+  },
+  {
+    "name": "TU Chemnitz",
+    "latitude": 50.8237,
+    "longitude": 12.9220,
+    "info": "Zweiter Punkt"
+  }
+]

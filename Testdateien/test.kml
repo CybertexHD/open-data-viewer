@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Placemark>
+    <name>Chemnitz Testpunkt</name>
+    <description>Ein Beispielpunkt in Chemnitz</description>
+    <Point>
+      <coordinates>12.9253,50.8323,0</coordinates>
+    </Point>
+  </Placemark>
+</kml>

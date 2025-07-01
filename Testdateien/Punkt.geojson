@@ -1,0 +1,11 @@
+{
+  "type": "FeatureCollection",
+  "features": [{
+    "type": "Feature",
+    "properties": { "name": "Zentrum Chemnitz" },
+    "geometry": {
+      "type": "Point",
+      "coordinates": [12.9265, 50.8323]
+    }
+  }]
+}
