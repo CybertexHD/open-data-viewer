@@ -1,106 +1,187 @@
 // =======================
-// OpenLayers Viewer mit Unterstützung für GeoJSON, KML, GPX und einfache JSON-Dateien
+// OpenLayers Viewer mit Punktbeschriftung (Dateiname) und Export ohne Label-Verlust
 // =======================
 
-// Initialisierung der Karte mit OpenStreetMap als Hintergrundkarte
 var map = new ol.Map({
-    target: 'map', // ID des HTML-Elements, in dem die Karte angezeigt wird
+    target: 'map',
     layers: [
         new ol.layer.Tile({
-            source: new ol.source.OSM({ attributions: [] }) // OpenStreetMap als Kartengrundlage
+            source: new ol.source.OSM({ attributions: [] })
         })
     ],
     view: new ol.View({
-        center: ol.proj.fromLonLat([13.404954, 52.5200066]), // Startposition: Berlin
-        zoom: 5 // Anfangszoomstufe
+        center: ol.proj.fromLonLat([13.404954, 52.5200066]),
+        zoom: 5
     })
 });
 
-// Objekt zum Speichern aller hochgeladenen Layer, damit man sie später löschen/exportieren kann
-var uploadedLayers = {}; // z. B. uploadedLayers["daten.geojson"] = <Layer>
+var uploadedLayers = {};
+var selectInteraction = new ol.interaction.Select({
+    style: function (feature) {
+        const label = feature.get('label') || feature.get('name') || '';
+        const geometry = feature.getGeometry();
+        const geometryType = geometry.getType();
 
-// Interaktion, um Features (z. B. Punkte/Polygone) auf der Karte selektieren zu können
-var selectInteraction = new ol.interaction.Select();
+        switch (geometryType) {
+            case 'Point':
+            case 'MultiPoint':
+                return new ol.style.Style({
+                    image: new ol.style.Circle({
+                        radius: 6,
+                        fill: new ol.style.Fill({ color: 'limegreen' }), // Punkt wird grün
+                        stroke: new ol.style.Stroke({ color: '#000', width: 2 })
+                    }),
+                    text: new ol.style.Text({
+                        text: label,
+                        font: '12px Arial',
+                        fill: new ol.style.Fill({ color: '#000' }),
+                        stroke: new ol.style.Stroke({ color: '#fff', width: 2 }),
+                        offsetY: -15
+                    })
+                });
+
+            case 'LineString':
+            case 'MultiLineString':
+                return new ol.style.Style({
+                    stroke: new ol.style.Stroke({ color: 'limegreen', width: 3 }),
+                    text: new ol.style.Text({
+                        text: label,
+                        font: '12px Arial',
+                        fill: new ol.style.Fill({ color: '#000' }),
+                        stroke: new ol.style.Stroke({ color: '#fff', width: 2 }),
+                        placement: 'line'
+                    })
+                });
+
+            case 'Polygon':
+            case 'MultiPolygon':
+                return new ol.style.Style({
+                    fill: new ol.style.Fill({ color: 'rgba(50, 205, 50, 0.3)' }), // hellgrüner Füllstil
+                    stroke: new ol.style.Stroke({ color: 'green', width: 2 }),
+                    text: new ol.style.Text({
+                        text: label,
+                        font: '12px Arial',
+                        fill: new ol.style.Fill({ color: '#000' }),
+                        stroke: new ol.style.Stroke({ color: '#fff', width: 2 }),
+                        overflow: true
+                    })
+                });
+
+            default:
+                return null;
+        }
+    }
+});
+
+
+
 map.addInteraction(selectInteraction);
 
-// Funktion zur Stilzuweisung je nach Geometrietyp des Features
+// Stilfunktion mit Label für Punkte
 function getFeatureStyle(feature) {
     if (!feature || !feature.getGeometry) return null;
-    var geometry = feature.getGeometry();
+    const geometry = feature.getGeometry();
     if (!geometry) return null;
-    var geometryType = geometry.getType();
+    const geometryType = geometry.getType();
+
+    // Gemeinsames Label für alle Geometrien (wenn vorhanden)
+    const label = feature.get('label') || feature.get('name') || '';
 
     switch (geometryType) {
         case 'Point':
         case 'MultiPoint':
-            // Stil für Punkte: roter Kreis mit schwarzem Rand
             return new ol.style.Style({
                 image: new ol.style.Circle({
                     radius: 6,
                     fill: new ol.style.Fill({ color: 'red' }),
                     stroke: new ol.style.Stroke({ color: '#000', width: 2 })
+                }),
+                text: new ol.style.Text({
+                    text: label,
+                    font: '12px Arial',
+                    fill: new ol.style.Fill({ color: '#000' }),
+                    stroke: new ol.style.Stroke({ color: '#fff', width: 2 }),
+                    offsetY: -15
                 })
             });
 
         case 'LineString':
         case 'MultiLineString':
-            // Stil für Linien: blaue Linie
             return new ol.style.Style({
-                stroke: new ol.style.Stroke({ color: '#0077ff', width: 3 })
+                stroke: new ol.style.Stroke({ color: '#0077ff', width: 3 }),
+                text: new ol.style.Text({
+                    text: label,
+                    font: '12px Arial',
+                    fill: new ol.style.Fill({ color: '#000' }),
+                    stroke: new ol.style.Stroke({ color: '#fff', width: 2 }),
+                    placement: 'line'
+                })
             });
 
         case 'Polygon':
         case 'MultiPolygon':
-            // Stil für Flächen: grün-transparent mit dunklem Rand
             return new ol.style.Style({
-                fill: new ol.style.Fill({ color: 'rgba(0, 128, 0, 0.3)' }),
-                stroke: new ol.style.Stroke({ color: '#006400', width: 2 })
+                fill: new ol.style.Fill({ color: 'rgba(255, 0, 0, 0.3)' }), // transparente rote Fläche
+                stroke: new ol.style.Stroke({ color: 'red', width: 2 }),   // rote Umrandung
+                text: new ol.style.Text({
+                    text: label,
+                    font: '12px Arial',
+                    fill: new ol.style.Fill({ color: '#000' }),
+                    stroke: new ol.style.Stroke({ color: '#fff', width: 2 }),
+                    overflow: true
+                })
             });
 
+
         default:
-            console.warn("Unbekannter Geometrietyp:", geometryType);
             return null;
     }
 }
 
-// Funktion zum Verarbeiten hochgeladener Dateien (GeoJSON, KML, GPX oder einfache JSONs)
+
+// Hauptfunktion zur Datei-Verarbeitung
 function handleFileUpload(file) {
     var reader = new FileReader();
 
     reader.onload = function (event) {
         var fileExt = file.name.split('.').pop().toLowerCase();
+        var labelBase = file.name.replace(/\.[^/.]+$/, ""); // Dateiname ohne Endung
 
-        // Wenn einfache JSON-Datei (kein GeoJSON), dann Koordinaten manuell verarbeiten
+        // Verarbeitung einfacher JSON-Dateien mit Koordinaten
         if (fileExt === 'json') {
             try {
                 const parsed = JSON.parse(event.target.result);
                 let features = [];
 
-                // JSON-Array erwartet mit Feldern "lat"/"lon" oder "latitude"/"longitude"
                 if (Array.isArray(parsed)) {
-                    parsed.forEach(entry => {
+                    parsed.forEach((entry, i) => {
                         const lat = entry.lat ?? entry.latitude;
                         const lon = entry.lon ?? entry.longitude;
                         if (lat !== undefined && lon !== undefined) {
+                            const label = `${labelBase} ${i + 1}`; // z. B. "test 1", "test 2"
+
+                            // Optionaler Prompt für individuellen Namen
+                            // const userLabel = prompt(`Name für Punkt bei [${lat}, ${lon}]?`, label) || label;
+
                             const feature = new ol.Feature({
                                 geometry: new ol.geom.Point(ol.proj.fromLonLat([lon, lat])),
                                 name: entry.name || 'Unbenannt',
-                                info: entry.info || ''
+                                info: entry.info || '',
+                                label: label // Beschriftung für Darstellung
                             });
                             features.push(feature);
                         }
                     });
                 } else {
-                    alert("Die JSON-Datei enthält kein Array. Struktur erwartet: [{latitude: ..., longitude: ...}, ...]");
+                    alert("Die JSON-Datei enthält kein Array.");
                     return;
                 }
 
                 if (features.length === 0) {
-                    alert("Keine gültigen Koordinaten in der JSON-Datei gefunden.");
+                    alert("Keine gültigen Koordinaten gefunden.");
                     return;
                 }
 
-                // Layer erstellen
                 const newVectorSource = new ol.source.Vector({ features });
                 const newLayer = new ol.layer.Vector({
                     source: newVectorSource,
@@ -110,13 +191,11 @@ function handleFileUpload(file) {
                 map.addLayer(newLayer);
                 uploadedLayers[file.name] = newLayer;
 
-                // Zoomen auf geladenen Bereich
                 const extent = newVectorSource.getExtent();
                 if (!ol.extent.isEmpty(extent)) {
                     map.getView().fit(extent, { padding: [50, 50, 50, 50], maxZoom: 15 });
                 }
 
-                // Datei in der Dateiliste anzeigen + Lösch- und Exportbuttons
                 const fileNamesList = document.getElementById('fileNames');
                 const li = document.createElement('li');
                 li.textContent = file.name;
@@ -125,7 +204,6 @@ function handleFileUpload(file) {
                 const actionContainer = document.createElement('div');
                 actionContainer.className = 'action-icons';
 
-                // Button zum Entfernen des Layers
                 const delBtn = document.createElement('button');
                 delBtn.textContent = '🗑️';
                 delBtn.className = 'layer-action-button';
@@ -135,34 +213,7 @@ function handleFileUpload(file) {
                     fileNamesList.removeChild(li);
                 };
 
-                // Button zum Exportieren des Layers als GeoJSON
-                const expBtn = document.createElement('button');
-                expBtn.textContent = '📤';
-                expBtn.className = 'layer-action-button';
-                expBtn.onclick = function () {
-                    const customName = prompt("Wie soll die Datei heißen?");
-                    if (!customName) return;
-
-                    const format = new ol.format.GeoJSON();
-                    const featuresToExport = uploadedLayers[file.name]?.getSource()?.getFeatures();
-                    if (!featuresToExport) return;
-
-                    const geojson = format.writeFeatures(featuresToExport, {
-                        featureProjection: 'EPSG:3857'
-                    });
-
-                    const blob = new Blob([geojson], { type: 'application/json' });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = customName.endsWith('.geojson') ? customName : customName + '.geojson';
-                    a.click();
-                    URL.revokeObjectURL(url);
-                };
-
-                // Buttons zur Dateiliste hinzufügen
                 actionContainer.appendChild(delBtn);
-                actionContainer.appendChild(expBtn);
                 li.appendChild(actionContainer);
                 fileNamesList.appendChild(li);
                 return;
@@ -172,7 +223,7 @@ function handleFileUpload(file) {
             }
         }
 
-        // Bei GeoJSON, KML, GPX → direkt mit OpenLayers-Formaten einlesen
+        // Verarbeitung GeoJSON, KML, GPX
         let format;
         if (fileExt === 'kml') {
             format = new ol.format.KML();
@@ -182,12 +233,20 @@ function handleFileUpload(file) {
             format = new ol.format.GeoJSON();
         }
 
-        // Features aus Datei laden
         const features = format.readFeatures(event.target.result, {
             featureProjection: 'EPSG:3857'
         });
 
-        // Neuen Layer erzeugen und zur Karte hinzufügen
+        // Labels ergänzen (nur für Punkte)
+        features.forEach((f, i) => {
+            const geom = f.getGeometry();
+            if (geom && ['Point', 'Polygon', 'MultiPolygon', 'LineString'].includes(geom.getType())) {
+                const label = `${labelBase} ${i + 1}`;
+                f.set('label', label);
+            }
+        });
+
+
         const newVectorSource = new ol.source.Vector({ features });
         const newLayer = new ol.layer.Vector({
             source: newVectorSource,
@@ -202,7 +261,6 @@ function handleFileUpload(file) {
             map.getView().fit(extent, { padding: [50, 50, 50, 50], maxZoom: 15 });
         }
 
-        // Datei in Liste einfügen (inkl. Button zum Löschen/Exportieren)
         const fileNamesList = document.getElementById('fileNames');
         const li = document.createElement('li');
         li.textContent = file.name;
@@ -220,39 +278,15 @@ function handleFileUpload(file) {
             fileNamesList.removeChild(li);
         };
 
-        const expBtn = document.createElement('button');
-        expBtn.textContent = '📤';
-        expBtn.className = 'layer-action-button';
-        expBtn.onclick = function () {
-            const customName = prompt("Wie soll die Datei heißen?");
-            if (!customName) return;
-
-            const format = new ol.format.GeoJSON();
-            const layer = uploadedLayers[file.name];
-            if (!layer) return;
-            const features = layer.getSource().getFeatures();
-            const geojson = format.writeFeatures(features, {
-                featureProjection: 'EPSG:3857'
-            });
-            const blob = new Blob([geojson], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = customName.endsWith('.geojson') ? customName : customName + '.geojson';
-            a.click();
-            URL.revokeObjectURL(url);
-        };
-
         actionContainer.appendChild(delBtn);
-        actionContainer.appendChild(expBtn);
         li.appendChild(actionContainer);
         fileNamesList.appendChild(li);
     };
 
-    reader.readAsText(file); // 🔃 Inhalt der Datei lesen
+    reader.readAsText(file);
 }
 
-// Dateiinput: auf erlaubte Endungen prüfen und Datei verarbeiten
+// Dateiinput verarbeiten
 const allowedExtensions = ['geojson', 'json', 'kml', 'gpx'];
 
 document.getElementById('fileInput').addEventListener('change', function (event) {
@@ -279,13 +313,13 @@ document.getElementById('fileInput').addEventListener('change', function (event)
     }
 });
 
-// Export von ausgewählten (selektierten) Features über Button
+// Export der selektierten Features als GeoJSON
 const exportSelectionBtn = document.getElementById('exportSelection');
 exportSelectionBtn.className = 'layer-action-button';
 exportSelectionBtn.addEventListener('click', function () {
     const selectedFeatures = selectInteraction.getFeatures();
     if (selectedFeatures.getLength() === 0) {
-        alert("Bitte wähle mindestens ein Objekt auf der Karte aus.");
+        alert("Bitte wähle mindestens ein Objekt aus.");
         return;
     }
 
@@ -296,6 +330,7 @@ exportSelectionBtn.addEventListener('click', function () {
     const geojson = format.writeFeatures(selectedFeatures.getArray(), {
         featureProjection: 'EPSG:3857'
     });
+
     const blob = new Blob([geojson], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -305,12 +340,11 @@ exportSelectionBtn.addEventListener('click', function () {
     URL.revokeObjectURL(url);
 });
 
-// Zoom-Steuerung an definierte Position setzen
+// Zoom-Steuerung unten links positionieren
 var zoomControl = new ol.control.Zoom();
 map.removeControl(map.getControls().getArray().find(ctrl => ctrl instanceof ol.control.Zoom));
 map.addControl(zoomControl);
 
-// Positionieren der Zoom-Buttons links unten in der Karte
 window.addEventListener('load', function () {
     var zoomElement = document.querySelector('.ol-zoom');
     if (zoomElement) {
@@ -319,4 +353,23 @@ window.addEventListener('load', function () {
         zoomElement.style.left = '10px';
         zoomElement.style.zIndex = '1000';
     }
+});
+
+// Punkt-Label per Alt-Klick umbenennen
+map.on('singleclick', function (evt) {
+    if (!evt.originalEvent.altKey) return; // Nur wenn Alt-Taste gedrückt ist
+
+    map.forEachFeatureAtPixel(evt.pixel, function (feature) {
+        const geometry = feature.getGeometry();
+        if (!['Point', 'LineString', 'Polygon', 'MultiPolygon'].includes(geometry.getType())) return;
+
+        const currentLabel = feature.get('label') || '';
+        const newLabel = prompt("Neuer Name für den Punkt:", currentLabel);
+        if (newLabel !== null) {
+            feature.set('label', newLabel);
+
+            // Stil sofort aktualisieren (falls Stylefunktion gecacht ist)
+            feature.changed();
+        }
+    });
 });
