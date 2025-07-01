@@ -1,8 +1,8 @@
 // =======================
-// 📜 OpenLayers Viewer mit Unterstützung für GeoJSON, KML, GPX und einfache JSON-Dateien
+// OpenLayers Viewer mit Unterstützung für GeoJSON, KML, GPX und einfache JSON-Dateien
 // =======================
 
-// 🗺️ Initialisierung der Karte mit OpenStreetMap als Hintergrundkarte
+// Initialisierung der Karte mit OpenStreetMap als Hintergrundkarte
 var map = new ol.Map({
     target: 'map', // ID des HTML-Elements, in dem die Karte angezeigt wird
     layers: [
@@ -16,14 +16,14 @@ var map = new ol.Map({
     })
 });
 
-// 📦 Objekt zum Speichern aller hochgeladenen Layer, damit man sie später löschen/exportieren kann
+// Objekt zum Speichern aller hochgeladenen Layer, damit man sie später löschen/exportieren kann
 var uploadedLayers = {}; // z. B. uploadedLayers["daten.geojson"] = <Layer>
 
-// ✅ Interaktion, um Features (z. B. Punkte/Polygone) auf der Karte selektieren zu können
+// Interaktion, um Features (z. B. Punkte/Polygone) auf der Karte selektieren zu können
 var selectInteraction = new ol.interaction.Select();
 map.addInteraction(selectInteraction);
 
-// 🎨 Funktion zur Stilzuweisung je nach Geometrietyp des Features
+// Funktion zur Stilzuweisung je nach Geometrietyp des Features
 function getFeatureStyle(feature) {
     if (!feature || !feature.getGeometry) return null;
     var geometry = feature.getGeometry();
@@ -63,20 +63,20 @@ function getFeatureStyle(feature) {
     }
 }
 
-// 📂 Funktion zum Verarbeiten hochgeladener Dateien (GeoJSON, KML, GPX oder einfache JSONs)
+// Funktion zum Verarbeiten hochgeladener Dateien (GeoJSON, KML, GPX oder einfache JSONs)
 function handleFileUpload(file) {
     var reader = new FileReader();
 
     reader.onload = function (event) {
         var fileExt = file.name.split('.').pop().toLowerCase();
 
-        // 🔄 Wenn einfache JSON-Datei (kein GeoJSON), dann Koordinaten manuell verarbeiten
+        // Wenn einfache JSON-Datei (kein GeoJSON), dann Koordinaten manuell verarbeiten
         if (fileExt === 'json') {
             try {
                 const parsed = JSON.parse(event.target.result);
                 let features = [];
 
-                // 📍 JSON-Array erwartet mit Feldern "lat"/"lon" oder "latitude"/"longitude"
+                // JSON-Array erwartet mit Feldern "lat"/"lon" oder "latitude"/"longitude"
                 if (Array.isArray(parsed)) {
                     parsed.forEach(entry => {
                         const lat = entry.lat ?? entry.latitude;
@@ -100,7 +100,7 @@ function handleFileUpload(file) {
                     return;
                 }
 
-                // 🧱 Layer erstellen
+                // Layer erstellen
                 const newVectorSource = new ol.source.Vector({ features });
                 const newLayer = new ol.layer.Vector({
                     source: newVectorSource,
@@ -110,13 +110,13 @@ function handleFileUpload(file) {
                 map.addLayer(newLayer);
                 uploadedLayers[file.name] = newLayer;
 
-                // 🗺️ Zoomen auf geladenen Bereich
+                // Zoomen auf geladenen Bereich
                 const extent = newVectorSource.getExtent();
                 if (!ol.extent.isEmpty(extent)) {
                     map.getView().fit(extent, { padding: [50, 50, 50, 50], maxZoom: 15 });
                 }
 
-                // 📋 Datei in der Dateiliste anzeigen + Lösch- und Exportbuttons
+                // Datei in der Dateiliste anzeigen + Lösch- und Exportbuttons
                 const fileNamesList = document.getElementById('fileNames');
                 const li = document.createElement('li');
                 li.textContent = file.name;
@@ -125,7 +125,7 @@ function handleFileUpload(file) {
                 const actionContainer = document.createElement('div');
                 actionContainer.className = 'action-icons';
 
-                // 🗑️ Button zum Entfernen des Layers
+                // Button zum Entfernen des Layers
                 const delBtn = document.createElement('button');
                 delBtn.textContent = '🗑️';
                 delBtn.className = 'layer-action-button';
@@ -135,7 +135,7 @@ function handleFileUpload(file) {
                     fileNamesList.removeChild(li);
                 };
 
-                // 📤 Button zum Exportieren des Layers als GeoJSON
+                // Button zum Exportieren des Layers als GeoJSON
                 const expBtn = document.createElement('button');
                 expBtn.textContent = '📤';
                 expBtn.className = 'layer-action-button';
@@ -172,7 +172,7 @@ function handleFileUpload(file) {
             }
         }
 
-        // 📦 Bei GeoJSON, KML, GPX → direkt mit OpenLayers-Formaten einlesen
+        // Bei GeoJSON, KML, GPX → direkt mit OpenLayers-Formaten einlesen
         let format;
         if (fileExt === 'kml') {
             format = new ol.format.KML();
@@ -182,12 +182,12 @@ function handleFileUpload(file) {
             format = new ol.format.GeoJSON();
         }
 
-        // 🔄 Features aus Datei laden
+        // Features aus Datei laden
         const features = format.readFeatures(event.target.result, {
             featureProjection: 'EPSG:3857'
         });
 
-        // 🧱 Neuen Layer erzeugen und zur Karte hinzufügen
+        // Neuen Layer erzeugen und zur Karte hinzufügen
         const newVectorSource = new ol.source.Vector({ features });
         const newLayer = new ol.layer.Vector({
             source: newVectorSource,
@@ -252,7 +252,7 @@ function handleFileUpload(file) {
     reader.readAsText(file); // 🔃 Inhalt der Datei lesen
 }
 
-// 📥 Dateiinput: auf erlaubte Endungen prüfen und Datei verarbeiten
+// Dateiinput: auf erlaubte Endungen prüfen und Datei verarbeiten
 const allowedExtensions = ['geojson', 'json', 'kml', 'gpx'];
 
 document.getElementById('fileInput').addEventListener('change', function (event) {
@@ -279,7 +279,7 @@ document.getElementById('fileInput').addEventListener('change', function (event)
     }
 });
 
-// 📤 Export von ausgewählten (selektierten) Features über Button
+// Export von ausgewählten (selektierten) Features über Button
 const exportSelectionBtn = document.getElementById('exportSelection');
 exportSelectionBtn.className = 'layer-action-button';
 exportSelectionBtn.addEventListener('click', function () {
@@ -305,12 +305,12 @@ exportSelectionBtn.addEventListener('click', function () {
     URL.revokeObjectURL(url);
 });
 
-// 🔍 Zoom-Steuerung an definierte Position setzen
+// Zoom-Steuerung an definierte Position setzen
 var zoomControl = new ol.control.Zoom();
 map.removeControl(map.getControls().getArray().find(ctrl => ctrl instanceof ol.control.Zoom));
 map.addControl(zoomControl);
 
-// 🧭 Positionieren der Zoom-Buttons links unten in der Karte
+// Positionieren der Zoom-Buttons links unten in der Karte
 window.addEventListener('load', function () {
     var zoomElement = document.querySelector('.ol-zoom');
     if (zoomElement) {

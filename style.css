@@ -1,7 +1,4 @@
-/* ================================
-   🌐 Basis-Layout und Grundfarben
-   ================================ */
-
+/* Basis-Layout und Grundfarben */
 body {
     font-family: 'Arial', sans-serif;
     background-color: #f4f4f4;
@@ -9,9 +6,7 @@ body {
     padding: 0;
 }
 
-/* ================================
-   📦 Haupt-Container zentriert alles
-   ================================ */
+/*Haupt-Container zentriert alles*/
 .container {
     display: flex;
     flex-direction: column;
@@ -21,9 +16,7 @@ body {
     text-align: center;
 }
 
-/* ================================
-   🧭 Header mit Titel
-   ================================ */
+/* Header mit Titel */
 header {
     background-color: #004080;
     color: white;
@@ -34,9 +27,7 @@ header {
     box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-/* ================================
-   ⬆️ Upload-Bereich
-   ================================ */
+/* Upload-Bereich */
 .upload-container {
     margin: 20px;
     padding: 20px;
@@ -61,9 +52,7 @@ header {
     cursor: pointer;
 }
 
-/* ================================
-    Button zum Auswählen
-   ================================ */
+/* Button zum Auswählen */
 .upload-button {
     padding: 12px 24px;
     background-color: #004080;
@@ -79,9 +68,7 @@ header {
     background-color: #2384e5;
 }
 
-/* ================================
-   🗺️ Karte und Dateiliste nebeneinander
-   ================================ */
+/* Karte und Dateiliste nebeneinander */
 .map-container {
     display: flex;
     justify-content: center;
@@ -91,9 +78,7 @@ header {
     margin-top: 20px;
 }
 
-/* ================================
-   🌍 Karte selbst
-   ================================ */
+/* Karte selbst */
 .map {
     width: 75%;
     height: 500px;
@@ -102,9 +87,7 @@ header {
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
 }
 
-/* ======================================
-   🔵 Stil für Datei-bezogene Icon-Buttons
-   ====================================== */
+/* Stil für Datei-bezogene Icon-Buttons */
 .file-list li {
     display: flex;
     align-items: center;
@@ -126,7 +109,7 @@ header {
     border: none;
     border-radius: 6px;
     padding: 4px 8px;
-    font-size: 12px; /* Kleinere Schriftgröße */
+    font-size: 12px; /* Schriftgröße */
     cursor: pointer;
     transition: background-color 0.2s ease;
 }
@@ -136,9 +119,7 @@ header {
 }
 
 
-/* ================================
-   🔍 Zoom-Steuerung in der Ecke
-   ================================ */
+/* Zoom-Steuerung in der Ecke */
 #zoom-container {
     position: absolute;
     bottom: 10px;
@@ -157,9 +138,7 @@ header {
     font-size: 1.1rem;
 }
 
-/* ================================
-   📤 Export-Button (Auswahl exportieren)
-   ================================ */
+/* Export-Button (Auswahl exportieren)*/
 #exportSelection {
     padding: 14px 24px;
     font-size: 16px;
