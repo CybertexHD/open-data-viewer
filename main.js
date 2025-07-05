@@ -1,375 +1,253 @@
 // =======================
-// OpenLayers Viewer mit Punktbeschriftung (Dateiname) und Export ohne Label-Verlust
+// OpenLayers Viewer (vollständig korrigiert): Cluster-Zoom, Tooltip, Selektion, Upload, Export
 // =======================
 
-var map = new ol.Map({
+const map = new ol.Map({
     target: 'map',
     layers: [
-        new ol.layer.Tile({
-            source: new ol.source.OSM({ attributions: [] })
-        })
+        new ol.layer.Tile({ source: new ol.source.OSM({ attributions: [] }) })
     ],
     view: new ol.View({
-        center: ol.proj.fromLonLat([13.404954, 52.5200066]),
-        zoom: 5
+        center: ol.proj.fromLonLat([13.5, 51.05]),
+        zoom: 9
     })
 });
 
-var uploadedLayers = {};
-var selectInteraction = new ol.interaction.Select({
-    style: function (feature) {
-        const label = feature.get('label') || feature.get('name') || '';
-        const geometry = feature.getGeometry();
-        const geometryType = geometry.getType();
+const uploadedLayers = {};
+const selectedFeatures = new ol.Collection();
 
-        switch (geometryType) {
-            case 'Point':
-            case 'MultiPoint':
-                return new ol.style.Style({
-                    image: new ol.style.Circle({
-                        radius: 6,
-                        fill: new ol.style.Fill({ color: 'limegreen' }), // Punkt wird grün
-                        stroke: new ol.style.Stroke({ color: '#000', width: 2 })
-                    }),
-                    text: new ol.style.Text({
-                        text: label,
-                        font: '12px Arial',
-                        fill: new ol.style.Fill({ color: '#000' }),
-                        stroke: new ol.style.Stroke({ color: '#fff', width: 2 }),
-                        offsetY: -15
-                    })
-                });
-
-            case 'LineString':
-            case 'MultiLineString':
-                return new ol.style.Style({
-                    stroke: new ol.style.Stroke({ color: 'limegreen', width: 3 }),
-                    text: new ol.style.Text({
-                        text: label,
-                        font: '12px Arial',
-                        fill: new ol.style.Fill({ color: '#000' }),
-                        stroke: new ol.style.Stroke({ color: '#fff', width: 2 }),
-                        placement: 'line'
-                    })
-                });
-
-            case 'Polygon':
-            case 'MultiPolygon':
-                return new ol.style.Style({
-                    fill: new ol.style.Fill({ color: 'rgba(50, 205, 50, 0.3)' }), // hellgrüner Füllstil
-                    stroke: new ol.style.Stroke({ color: 'green', width: 2 }),
-                    text: new ol.style.Text({
-                        text: label,
-                        font: '12px Arial',
-                        fill: new ol.style.Fill({ color: '#000' }),
-                        stroke: new ol.style.Stroke({ color: '#fff', width: 2 }),
-                        overflow: true
-                    })
-                });
-
-            default:
-                return null;
-        }
-    }
+const selectInteraction = new ol.interaction.Select({
+    multi: true,
+    features: selectedFeatures,
+    layers: () => true,
+    style: null
 });
-
-
-
 map.addInteraction(selectInteraction);
 
-// Stilfunktion mit Label für Punkte
+selectedFeatures.on('add', e => e.element.changed());
+selectedFeatures.on('remove', e => e.element.changed());
+
 function getFeatureStyle(feature) {
-    if (!feature || !feature.getGeometry) return null;
     const geometry = feature.getGeometry();
     if (!geometry) return null;
-    const geometryType = geometry.getType();
+    const type = geometry.getType();
 
-    // Gemeinsames Label für alle Geometrien (wenn vorhanden)
+    const clusteredFeatures = feature.get('features');
+    const isCluster = clusteredFeatures && clusteredFeatures.length > 1;
+
+    if (isCluster) {
+        const allSelected = clusteredFeatures.every(f => selectedFeatures.getArray().includes(f));
+        const color = allSelected ? 'limegreen' : 'red';
+
+        return new ol.style.Style({
+            image: new ol.style.Circle({
+                radius: 10,
+                fill: new ol.style.Fill({ color }),
+                stroke: new ol.style.Stroke({ color: '#fff', width: 2 })
+            }),
+            text: new ol.style.Text({
+                text: clusteredFeatures.length.toString(),
+                fill: new ol.style.Fill({ color: '#000' }),
+                stroke: new ol.style.Stroke({ color: '#fff', width: 2 })
+            })
+        });
+    }
+
     const label = feature.get('label') || feature.get('name') || '';
+    const selected = selectedFeatures.getArray().includes(feature);
+    const color = selected ? 'limegreen' : 'red';
+    const textStyle = new ol.style.Text({
+        text: label,
+        font: '12px Orbitron, sans-serif',
+        fill: new ol.style.Fill({ color: '#00f0ff' }),
+        stroke: new ol.style.Stroke({ color: '#000', width: 2 }),
+        offsetY: type === 'Point' ? -15 : 0,
+        placement: type.includes('Line') ? 'line' : undefined,
+        overflow: true
+    });
 
-    switch (geometryType) {
+    switch (type) {
         case 'Point':
-        case 'MultiPoint':
             return new ol.style.Style({
                 image: new ol.style.Circle({
                     radius: 6,
-                    fill: new ol.style.Fill({ color: 'red' }),
+                    fill: new ol.style.Fill({ color }),
                     stroke: new ol.style.Stroke({ color: '#000', width: 2 })
                 }),
-                text: new ol.style.Text({
-                    text: label,
-                    font: '12px Arial',
-                    fill: new ol.style.Fill({ color: '#000' }),
-                    stroke: new ol.style.Stroke({ color: '#fff', width: 2 }),
-                    offsetY: -15
-                })
+                text: textStyle
             });
-
         case 'LineString':
         case 'MultiLineString':
             return new ol.style.Style({
-                stroke: new ol.style.Stroke({ color: '#0077ff', width: 3 }),
-                text: new ol.style.Text({
-                    text: label,
-                    font: '12px Arial',
-                    fill: new ol.style.Fill({ color: '#000' }),
-                    stroke: new ol.style.Stroke({ color: '#fff', width: 2 }),
-                    placement: 'line'
-                })
+                stroke: new ol.style.Stroke({ color, width: 3 }),
+                text: textStyle
             });
-
         case 'Polygon':
         case 'MultiPolygon':
             return new ol.style.Style({
-                fill: new ol.style.Fill({ color: 'rgba(255, 0, 0, 0.3)' }), // transparente rote Fläche
-                stroke: new ol.style.Stroke({ color: 'red', width: 2 }),   // rote Umrandung
-                text: new ol.style.Text({
-                    text: label,
-                    font: '12px Arial',
-                    fill: new ol.style.Fill({ color: '#000' }),
-                    stroke: new ol.style.Stroke({ color: '#fff', width: 2 }),
-                    overflow: true
-                })
+                fill: new ol.style.Fill({ color: selected ? 'rgba(50,205,50,0.3)' : 'rgba(255,0,0,0.3)' }),
+                stroke: new ol.style.Stroke({ color, width: 2 }),
+                text: textStyle
             });
-
-
         default:
             return null;
     }
 }
 
+map.on('singleclick', evt => {
+    let handledCluster = false;
+    map.forEachFeatureAtPixel(evt.pixel, feature => {
+        const feats = feature.get('features');
+        if (feats && feats.length > 1) {
+            const extent = ol.extent.createEmpty();
+            feats.forEach(f => ol.extent.extend(extent, f.getGeometry().getExtent()));
+            const view = map.getView();
+            view.fit(extent, { duration: 500, padding: [50, 50, 50, 50], maxZoom: 15 });
+            handledCluster = true;
+        }
+    });
+    if (handledCluster) return;
+});
 
-// Hauptfunktion zur Datei-Verarbeitung
-function handleFileUpload(file) {
-    var reader = new FileReader();
+map.on('pointermove', evt => {
+    const tooltip = document.getElementById('tooltip');
+    if (evt.dragging) {
+        tooltip.style.display = 'none';
+        return;
+    }
 
-    reader.onload = function (event) {
-        var fileExt = file.name.split('.').pop().toLowerCase();
-        var labelBase = file.name.replace(/\.[^/.]+$/, ""); // Dateiname ohne Endung
+    const feature = map.forEachFeatureAtPixel(evt.pixel, f => {
+        const feats = f.get('features');
+        return feats && feats.length ? feats[0] : f;
+    });
 
-        // Verarbeitung einfacher JSON-Dateien mit Koordinaten
-        if (fileExt === 'json') {
-            try {
-                const parsed = JSON.parse(event.target.result);
-                let features = [];
+    if (!feature) {
+        tooltip.style.display = 'none';
+        return;
+    }
 
-                if (Array.isArray(parsed)) {
-                    parsed.forEach((entry, i) => {
-                        const lat = entry.lat ?? entry.latitude;
-                        const lon = entry.lon ?? entry.longitude;
-                        if (lat !== undefined && lon !== undefined) {
-                            const label = `${labelBase} ${i + 1}`; // z. B. "test 1", "test 2"
+    const props = feature.getProperties();
+    const label = props.label || props.name || props.bezeichnung || '';
 
-                            // Optionaler Prompt für individuellen Namen
-                            // const userLabel = prompt(`Name für Punkt bei [${lat}, ${lon}]?`, label) || label;
+    let html = '';
+    if (label) {
+        html += `<b style="font-size:15px">${label}</b><hr>`;
+    }
 
-                            const feature = new ol.Feature({
-                                geometry: new ol.geom.Point(ol.proj.fromLonLat([lon, lat])),
-                                name: entry.name || 'Unbenannt',
-                                info: entry.info || '',
-                                label: label // Beschriftung für Darstellung
-                            });
-                            features.push(feature);
-                        }
-                    });
-                } else {
-                    alert("Die JSON-Datei enthält kein Array.");
-                    return;
-                }
+    for (let key in props) {
+        if (!['geometry', 'label', 'name', 'bezeichnung'].includes(key)) {
+            html += `<b>${key}</b>: ${props[key]}<br>`;
+        }
+    }
 
-                if (features.length === 0) {
-                    alert("Keine gültigen Koordinaten gefunden.");
-                    return;
-                }
+    tooltip.innerHTML = html;
+    tooltip.style.left = evt.originalEvent.pageX + 'px';
+    tooltip.style.top = evt.originalEvent.pageY - 20 + 'px';
+    tooltip.style.display = 'block';
+});
 
-                const newVectorSource = new ol.source.Vector({ features });
-                const newLayer = new ol.layer.Vector({
-                    source: newVectorSource,
-                    style: getFeatureStyle
-                });
+map.on('click', evt => {
+    let featuresFound = [];
+    map.forEachFeatureAtPixel(evt.pixel, feature => {
+        const feats = feature.get('features') || [feature];
+        featuresFound = featuresFound.concat(feats);
+    });
 
-                map.addLayer(newLayer);
-                uploadedLayers[file.name] = newLayer;
+    if (featuresFound.length === 0) return;
 
-                const extent = newVectorSource.getExtent();
-                if (!ol.extent.isEmpty(extent)) {
-                    map.getView().fit(extent, { padding: [50, 50, 50, 50], maxZoom: 15 });
-                }
+    const changedFeatures = new Set();
 
-                const fileNamesList = document.getElementById('fileNames');
-                const li = document.createElement('li');
-                li.textContent = file.name;
-                li.id = 'entry-' + file.name;
-
-                const actionContainer = document.createElement('div');
-                actionContainer.className = 'action-icons';
-
-                const delBtn = document.createElement('button');
-                delBtn.textContent = '🗑️';
-                delBtn.className = 'layer-action-button';
-                delBtn.onclick = function () {
-                    map.removeLayer(uploadedLayers[file.name]);
-                    delete uploadedLayers[file.name];
-                    fileNamesList.removeChild(li);
-                };
-
-                actionContainer.appendChild(delBtn);
-                li.appendChild(actionContainer);
-                fileNamesList.appendChild(li);
-                return;
-            } catch (e) {
-                alert("Fehler beim Parsen der JSON-Datei: " + e.message);
-                return;
+    if (evt.originalEvent.shiftKey) {
+        featuresFound.forEach(f => {
+            if (selectedFeatures.getArray().includes(f)) {
+                selectedFeatures.remove(f);
+            } else {
+                selectedFeatures.push(f);
             }
-        }
+            changedFeatures.add(f);
+        });
+    } else {
+        selectedFeatures.getArray().forEach(f => changedFeatures.add(f));
+        selectedFeatures.clear();
+        featuresFound.forEach(f => {
+            selectedFeatures.push(f);
+            changedFeatures.add(f);
+        });
+    }
 
-        // Verarbeitung GeoJSON, KML, GPX
-        let format;
-        if (fileExt === 'kml') {
-            format = new ol.format.KML();
-        } else if (fileExt === 'gpx') {
-            format = new ol.format.GPX();
-        } else {
-            format = new ol.format.GeoJSON();
-        }
+    changedFeatures.forEach(f => f.changed());
+});
 
-        const features = format.readFeatures(event.target.result, {
+// Datei-Upload + Layer-Erzeugung
+function handleFileUpload(file) {
+    const reader = new FileReader();
+    reader.onload = e => {
+        const ext = file.name.split('.').pop().toLowerCase();
+        let format = null;
+        if (ext === 'geojson' || ext === 'json') format = new ol.format.GeoJSON();
+        else if (ext === 'gpx') format = new ol.format.GPX();
+        else if (ext === 'kml') format = new ol.format.KML();
+        else return alert('Nicht unterstütztes Format');
+
+        const features = format.readFeatures(e.target.result, {
             featureProjection: 'EPSG:3857'
         });
 
-        // Labels ergänzen (nur für Punkte)
-        features.forEach((f, i) => {
-            const geom = f.getGeometry();
-            if (geom && ['Point', 'Polygon', 'MultiPolygon', 'LineString'].includes(geom.getType())) {
-                const label = `${labelBase} ${i + 1}`;
-                f.set('label', label);
-            }
-        });
+        const baseName = file.name.replace(/\.[^/.]+$/, "");
+        features.forEach((f, i) => f.set('label', f.get('name') || baseName + ' ' + (i + 1)));
 
+        const pointFeatures = features.filter(f => f.getGeometry()?.getType() === 'Point');
+        const otherFeatures = features.filter(f => f.getGeometry()?.getType() !== 'Point');
 
-        const newVectorSource = new ol.source.Vector({ features });
-        const newLayer = new ol.layer.Vector({
-            source: newVectorSource,
-            style: getFeatureStyle
-        });
+        if (pointFeatures.length > 0) {
+            const clusteredSource = new ol.source.Cluster({
+                distance: 40,
+                source: new ol.source.Vector({ features: pointFeatures })
+            });
 
-        map.addLayer(newLayer);
-        uploadedLayers[file.name] = newLayer;
-
-        const extent = newVectorSource.getExtent();
-        if (!ol.extent.isEmpty(extent)) {
-            map.getView().fit(extent, { padding: [50, 50, 50, 50], maxZoom: 15 });
+            const clusterLayer = new ol.layer.Vector({
+                source: clusteredSource,
+                style: getFeatureStyle
+            });
+            map.addLayer(clusterLayer);
+            uploadedLayers[file.name + '_cluster'] = clusterLayer;
         }
 
-        const fileNamesList = document.getElementById('fileNames');
-        const li = document.createElement('li');
-        li.textContent = file.name;
-        li.id = 'entry-' + file.name;
-
-        const actionContainer = document.createElement('div');
-        actionContainer.className = 'action-icons';
-
-        const delBtn = document.createElement('button');
-        delBtn.textContent = '🗑️';
-        delBtn.className = 'layer-action-button';
-        delBtn.onclick = function () {
-            map.removeLayer(uploadedLayers[file.name]);
-            delete uploadedLayers[file.name];
-            fileNamesList.removeChild(li);
-        };
-
-        actionContainer.appendChild(delBtn);
-        li.appendChild(actionContainer);
-        fileNamesList.appendChild(li);
+        if (otherFeatures.length > 0) {
+            const vectorLayer = new ol.layer.Vector({
+                source: new ol.source.Vector({ features: otherFeatures }),
+                style: getFeatureStyle
+            });
+            map.addLayer(vectorLayer);
+            uploadedLayers[file.name + '_vector'] = vectorLayer;
+        }
     };
-
     reader.readAsText(file);
 }
 
-// Dateiinput verarbeiten
-const allowedExtensions = ['geojson', 'json', 'kml', 'gpx'];
-
-document.getElementById('fileInput').addEventListener('change', function (event) {
-    var files = event.target.files;
-    if (files.length === 0) {
-        alert('Bitte wähle mindestens eine Datei aus!');
-        return;
-    }
-
-    for (let i = 0; i < files.length; i++) {
-        let file = files[i];
-        let ext = file.name.split('.').pop().toLowerCase();
-
-        if (!allowedExtensions.includes(ext)) {
-            alert(`Dateityp .${ext} wird nicht unterstützt.`);
-            continue;
-        }
-
-        if (!uploadedLayers[file.name]) {
+document.getElementById('fileInput').addEventListener('change', e => {
+    Array.from(e.target.files).forEach(file => {
+        if (!uploadedLayers[file.name + '_cluster'] && !uploadedLayers[file.name + '_vector']) {
             handleFileUpload(file);
         } else {
-            alert(`Datei ${file.name} wurde bereits hochgeladen.`);
+            alert(`${file.name} wurde bereits hochgeladen.`);
         }
-    }
+    });
 });
 
-// Export der selektierten Features als GeoJSON
-const exportSelectionBtn = document.getElementById('exportSelection');
-exportSelectionBtn.className = 'layer-action-button';
-exportSelectionBtn.addEventListener('click', function () {
-    const selectedFeatures = selectInteraction.getFeatures();
-    if (selectedFeatures.getLength() === 0) {
-        alert("Bitte wähle mindestens ein Objekt aus.");
-        return;
-    }
-
-    const customName = prompt("Wie soll die Export-Datei heißen?");
-    if (!customName) return;
-
+document.getElementById('exportSelection').addEventListener('click', () => {
     const format = new ol.format.GeoJSON();
-    const geojson = format.writeFeatures(selectedFeatures.getArray(), {
+    const data = format.writeFeatures(selectedFeatures.getArray(), {
         featureProjection: 'EPSG:3857'
     });
 
-    const blob = new Blob([geojson], { type: 'application/json' });
+    const blob = new Blob([data], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = customName.endsWith('.geojson') ? customName : customName + '.geojson';
-    a.click();
+    const filename = prompt("Dateiname für Export:", "auswahl.geojson") || "auswahl.geojson";
+
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    link.click();
     URL.revokeObjectURL(url);
-});
-
-// Zoom-Steuerung unten links positionieren
-var zoomControl = new ol.control.Zoom();
-map.removeControl(map.getControls().getArray().find(ctrl => ctrl instanceof ol.control.Zoom));
-map.addControl(zoomControl);
-
-window.addEventListener('load', function () {
-    var zoomElement = document.querySelector('.ol-zoom');
-    if (zoomElement) {
-        zoomElement.style.position = 'absolute';
-        zoomElement.style.bottom = '10px';
-        zoomElement.style.left = '10px';
-        zoomElement.style.zIndex = '1000';
-    }
-});
-
-// Punkt-Label per Alt-Klick umbenennen
-map.on('singleclick', function (evt) {
-    if (!evt.originalEvent.altKey) return; // Nur wenn Alt-Taste gedrückt ist
-
-    map.forEachFeatureAtPixel(evt.pixel, function (feature) {
-        const geometry = feature.getGeometry();
-        if (!['Point', 'LineString', 'Polygon', 'MultiPolygon'].includes(geometry.getType())) return;
-
-        const currentLabel = feature.get('label') || '';
-        const newLabel = prompt("Neuer Name für den Punkt:", currentLabel);
-        if (newLabel !== null) {
-            feature.set('label', newLabel);
-
-            // Stil sofort aktualisieren (falls Stylefunktion gecacht ist)
-            feature.changed();
-        }
-    });
 });

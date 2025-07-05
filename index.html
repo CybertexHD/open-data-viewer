@@ -2,42 +2,48 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Open Data Viewer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/ol@latest/dist/ol.js"></script>
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>Open Data Viewer</h1>
+
+        <!-- Header -->
+        <header id="pageHeader">
+             <span>🌐 Open Data Viewer</span>
         </header>
 
-        <!-- Upload-Button -->
-        <div class="upload-container">
-            <!-- Unsichtbares File-Input -->
-            <input type="file" id="fileInput" accept=".geojson,.json,.kml,.gpx" multiple style="display: none;">
-            <!-- Button, um den File-Input zu aktivieren -->
-            <button class="upload-button" onclick="document.getElementById('fileInput').click()">Wählen Sie eine Datei aus</button>
-        </div>
-
-        <!-- Flexbox Container für Karte und Dateinamen -->
+        <!-- Map und Sidebar -->
         <div class="map-container">
-            <div id="map" class="map"></div>
-            <div class="file-list">
-                <h3>Hochgeladene Dateien:</h3>
-                <ul id="fileNames"></ul> <!-- Hier werden die Dateinamen angezeigt -->
 
-                <!-- 🔽 Neuer Button -->
+            <!-- Karte -->
+            <div id="map" class="map"></div>
+
+            <!-- Seitenleiste -->
+            <div class="file-list">
+                <h3>Dateien</h3>
+
+                <div class="upload-container">
+                    <input type="file" id="fileInput" accept=".geojson,.json,.kml,.gpx" multiple style="display: none;">
+                    <button class="upload-button" onclick="document.getElementById('fileInput').click()">📂 Dateien wählen</button>
+                </div>
+
+                <ul id="fileNames"></ul>
+
                 <button id="exportSelection" class="export-button">📤 Auswahl exportieren</button>
             </div>
         </div>
 
-    </div>
+        <!-- Tooltip -->
+        <div id="tooltip" class="tooltip"></div>
 
-    <!-- Popup für die Anzeige von GeoJSON-Daten -->
-    <div id="popup" class="ol-popup">
-        <div id="popup-content"></div>
+        <!-- Ladeanimation -->
+        <div id="loading" class="loading-overlay">
+            <div class="spinner"></div>
+            <div class="loading-text">Lade Daten...</div>
+        </div>
     </div>
 
     <script src="main.js"></script>
