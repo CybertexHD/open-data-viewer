@@ -1,249 +1,217 @@
-/* === Futuristisches OpenLayers-Design === */
-
-:root {
-  --bg-light: #f0f0f5;
-  --bg-dark: #0a0a16;
-  --text-light: #111;
-  --text-dark: #eee;
-  --accent: #00f0ff;
-  --accent-dark: #00d4e6;
-  --accent-hover: #00c8d6;
-}
-
-body {
+/* ====== Reset & Grundlayout ====== */
+* {
   margin: 0;
-  font-family: 'Orbitron', sans-serif;
-  background-color: var(--bg-light);
-  color: var(--text-light);
-  transition: background-color 0.5s, color 0.5s;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-body.dark-mode {
-  background-color: var(--bg-dark);
-  color: var(--text-dark);
-}
-
-.container {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  width: 100vw;
+html, body {
+  height: 100%;
+  width: 100%;
+  font-family: "Segoe UI", "Open Sans", sans-serif;
+  background-color: #f5faff;
+  color: #333;
   overflow: hidden;
 }
 
-/* === HEADER === */
-header {
-  background-color: #1b1b2f;
-  color: var(--accent);
-  padding: 16px 24px;
-  font-size: 2rem;
-  letter-spacing: 1.5px;
+/* ====== Geodaten-Viewer Balken optimiert ====== */
+.header-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 60px;
+  background-color: #0078d4;
+  color: white;
+  font-size: 22px;
+  font-weight: 600;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  box-shadow: 0 0 10px var(--accent);
-  z-index: 10;
+  justify-content: flex-start; /* Text linksbündig */
+  padding-left: 20px;
+  z-index: 100;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  letter-spacing: 0.4px;
 }
 
-.dark-mode header {
-  background-color: #06060e;
-  color: var(--accent);
-}
-
-/* === MAP + SIDEBAR === */
-.map-container {
+/* Seiteninhalt korrekt verschieben */
+.app-container {
+  margin-top: 60px;
+  height: calc(100vh - 60px);
   display: flex;
-  flex: 1;
-  height: 100%;
-  overflow: hidden;
+  width: 100vw;
 }
 
-.map {
+.map-container {
   flex: 1;
+  position: relative;
+}
+
+#map {
   height: 100%;
-  border: 2px solid var(--accent);
-  box-shadow: 0 0 20px #00f0ff44;
+  width: 100%;
+  background: #e0e0e0;
   z-index: 1;
 }
 
-/* === SIDEBAR === */
-.file-list {
+/* ====== Sidebar ====== */
+.sidebar {
   width: 320px;
-  background-color: #14142b;
-  color: white;
+  background: #ffffff;
+  border-left: 2px solid #d0e3f0;
   padding: 20px;
   display: flex;
   flex-direction: column;
-  box-shadow: -4px 0 12px rgba(0, 255, 255, 0.2);
-  transition: background-color 0.5s;
+  justify-content: flex-start;
+  box-shadow: -4px 0 8px rgba(0,0,0,0.05);
+  animation: slideIn 0.5s ease-out;
   z-index: 2;
 }
 
-.dark-mode .file-list {
-  background-color: #0b0b1a;
+.sidebar header h1 {
+  display: none;
 }
 
-.file-list h3 {
-  font-size: 1.5rem;
-  margin-bottom: 16px;
-  color: var(--accent);
-  border-bottom: 1px solid var(--accent);
-  padding-bottom: 6px;
+/* ====== Upload-Button ====== */
+.upload-label {
+  background: #0078d4;
+  color: white;
+  padding: 12px 18px;
+  border-radius: 6px;
+  font-size: 15px;
+  font-weight: 500;
+  text-align: center;
+  width: 100%;
+  display: block;
+  cursor: pointer;
+  margin-bottom: 20px;
+  transition: background 0.3s ease;
+}
+.upload-label:hover {
+  background: #005ea2;
 }
 
-#fileNames {
+input[type="file"] {
+  display: none;
+}
+
+/* ====== Dateiliste ====== */
+.file-list-section h2 {
+  font-size: 16px;
+  margin: 15px 0 10px;
+  font-weight: 500;
+  color: #0078d4;
+}
+
+.file-list {
   list-style: none;
-  padding: 0;
-  margin: 0;
-  flex: 1;
   overflow-y: auto;
+  max-height: 45vh;
+  padding-right: 4px;
 }
 
-#fileNames li {
+.file-list li {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #1f1f3a;
-  margin-bottom: 10px;
-  padding: 10px 12px;
-  border-radius: 6px;
-  font-size: 1.1rem;
-  transition: background-color 0.3s;
-}
-
-#fileNames li:hover {
-  background-color: #2c2c4d;
+  padding: 6px 10px;
+  border: 1px solid #cce4f6;
+  border-radius: 4px;
+  margin-bottom: 6px;
+  background: #eef6fb;
+  animation: fadeInUp 0.4s ease-out both;
 }
 
 .filename-label {
-  color: var(--accent);
-  flex: 1;
-  text-align: left;
+  font-size: 14px;
+  flex-grow: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* === BUTTONS === */
-.upload-container {
-  text-align: center;
-  margin-bottom: 20px;
-}
-
-.upload-button {
-  padding: 14px 24px;
-  font-size: 1.1rem;
-  background-color: var(--accent);
-  color: #000;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 0 10px var(--accent);
-}
-
-.upload-button:hover {
-  background-color: var(--accent-hover);
-  transform: scale(1.05);
-}
-
-.layer-action-button {
-  background-color: var(--accent);
-  color: black;
-  border: none;
-  padding: 6px 12px;
-  font-size: 1.2rem;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: transform 0.2s ease;
-}
-
-.layer-action-button:hover {
-  transform: scale(1.1);
-  background-color: var(--accent-hover);
-}
-
-/* === EXPORT BUTTON GANZ UNTEN === */
-.export-button {
-  margin-top: 20px;
-  padding: 14px;
-  background-color: #ff2d95;
-  color: white;
-  border: none;
-  font-size: 1.1rem;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 0 12px #ff2d95aa;
-  align-self: flex-end;
-  width: 100%;
-}
-
-.export-button:hover {
-  transform: scale(1.05);
-  background-color: #ff55a0;
-}
-
-/* === TOGGLE-BUTTON DARK-MODE === */
-#modeToggle {
+.file-remove-btn {
   background: transparent;
-  color: var(--accent);
-  font-size: 1.8rem;
   border: none;
+  font-size: 16px;
+  color: #c00;
   cursor: pointer;
-  transition: transform 0.3s;
+  margin-left: 8px;
+  transition: transform 0.2s;
+}
+.file-remove-btn:hover {
+  transform: scale(1.2);
 }
 
-#modeToggle:hover {
-  transform: scale(1.3);
+/* ====== Aktionen (Export etc.) ====== */
+.actions {
+  margin-top: auto;
 }
 
-/* === TOOLTIP === */
-.tooltip {
-  position: absolute;
-  background-color: rgba(0, 255, 255, 0.85);
-  color: #000;
-  padding: 6px 12px;
+.button {
+  background: #28a745;
+  color: white;
+  padding: 10px 16px;
+  border: none;
   border-radius: 6px;
   font-size: 14px;
-  pointer-events: none;
-  z-index: 1000;
-  white-space: nowrap;
-  box-shadow: 0 0 10px #00f0ff;
-  transform: translate(-50%, -100%);
-  display: none;
-  transition: opacity 0.3s ease;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  width: 100%;
+  text-align: center;
+}
+.button:hover {
+  background: #1e7e34;
 }
 
-/* === LOADING === */
-.loading-overlay {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: rgba(0,0,0,0.85);
-  color: white;
-  z-index: 2000;
+/* ====== Tooltip ====== */
+.tooltip {
+  position: absolute;
+  background: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 13px;
+  pointer-events: none;
   display: none;
-  flex-direction: column;
+  z-index: 10;
+  max-width: 300px;
+}
+
+/* ====== Ladeoverlay ====== */
+.loading-overlay {
+  position: absolute;
+  top: 0; left: 0;
+  right: 0; bottom: 0;
+  background: rgba(255, 255, 255, 0.75);
+  display: none;
   justify-content: center;
   align-items: center;
-  gap: 12px;
+  z-index: 1000;
+  font-size: 18px;
+  font-weight: 500;
+  color: #0078d4;
 }
 
-.spinner {
-  width: 50px;
-  height: 50px;
-  border: 6px solid var(--accent);
-  border-top: 6px solid transparent;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
+/* ====== Animationen ====== */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.loading-text {
-  font-size: 1.4rem;
-  color: var(--accent);
-  font-weight: bold;
-  text-shadow: 0 0 8px var(--accent);
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }

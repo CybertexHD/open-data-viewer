@@ -1,51 +1,47 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <title>Open Data Viewer</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.jsdelivr.net/npm/ol@latest/dist/ol.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Geodaten-Viewer</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@latest/ol.css">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-
-        <!-- Header -->
-        <header id="pageHeader">
-             <span>🌐 Open Data Viewer</span>
-        </header>
-
-        <!-- Map und Sidebar -->
-        <div class="map-container">
-
-            <!-- Karte -->
-            <div id="map" class="map"></div>
-
-            <!-- Seitenleiste -->
-            <div class="file-list">
-                <h3>Dateien</h3>
-
-                <div class="upload-container">
-                    <input type="file" id="fileInput" accept=".geojson,.json,.kml,.gpx" multiple style="display: none;">
-                    <button class="upload-button" onclick="document.getElementById('fileInput').click()">📂 Dateien wählen</button>
-                </div>
-
-                <ul id="fileNames"></ul>
-
-                <button id="exportSelection" class="export-button">📤 Auswahl exportieren</button>
-            </div>
-        </div>
-
-        <!-- Tooltip -->
-        <div id="tooltip" class="tooltip"></div>
-
-        <!-- Ladeanimation -->
-        <div id="loading" class="loading-overlay">
-            <div class="spinner"></div>
-            <div class="loading-text">Lade Daten...</div>
-        </div>
+  <div class="app-container">
+    <!-- Hauptbereich: Karte und Sidebar nebeneinander -->
+    <div class="map-container">
+      <div class="header-bar">Geodaten-Viewer</div> <!-- Überschrift als Balken über der Karte -->
+      <div id="map"></div> <!-- Hier wird die OpenLayers-Karte gerendert -->
+      <div id="tooltip" class="tooltip"></div> <!-- Tooltip bei Hover auf Features -->
     </div>
 
-    <script src="main.js"></script>
+    <!-- Seitenleiste mit Steuerfunktionen -->
+    <aside class="sidebar">
+      <!-- Abschnitt zum Datei-Upload -->
+      <section class="upload-section">
+        <label for="fileInput" class="upload-label button fullwidth">Datei hochladen</label>
+        <input type="file" id="fileInput" multiple accept=".geojson,.json,.kml,.gpx" hidden>
+      </section>
+
+      <!-- Liste der hochgeladenen Dateien -->
+      <section class="file-list-section">
+        <h2>Hochgeladene Dateien</h2>
+        <ul id="fileNames" class="file-list"></ul>
+      </section>
+
+      <!-- Aktions-Buttons -->
+      <section class="actions">
+        <button id="exportSelection" class="button fullwidth">Auswahl exportieren</button>
+      </section>
+    </aside>
+  </div>
+
+  <!-- Overlay, das während des Ladens eingeblendet wird -->
+  <div id="loading" class="loading-overlay"><span>Lade Daten...</span></div>
+
+  <!-- JavaScript-Importe -->
+  <script src="https://cdn.jsdelivr.net/npm/ol@latest/dist/ol.js"></script>
+  <script src="main.js"></script>
 </body>
 </html>
