@@ -212,11 +212,10 @@ function handleFileUpload(file) {
     else return alert('Nicht unterstütztes Format');
 
     // Einlesen und Konvertieren der Features in Web Mercator-Projektion
-    const features = format.readFeatures(e.target.result, {
-      featureProjection: 'EPSG:3857'
-    });
-
-    const baseName = file.name.replace(/\.[^/.]+$/, ""); // Dateiname ohne Endung
+    const features = format.readFeatures(e.target.result, { featureProjection: 'EPSG:3857'});
+    
+    // Dateiname ohne Endung
+    const baseName = file.name.replace(/\.[^/.]+$/, ""); 
 
     // Automatisierte Label-Vergabe falls kein name vorhanden ist
     features.forEach((f, i) => f.set('label', f.get('name') || baseName + ' ' + (i + 1)));
