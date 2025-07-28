@@ -91,7 +91,6 @@ function getFeatureStyle(feature) {
   }
 }
 
-
 // Styles neu zeichnen, z. B. nach Auswahländerung
 function refreshAllStyles() {
   Object.values(uploadedLayers).forEach(layer => {
@@ -102,40 +101,67 @@ function refreshAllStyles() {
 }
 
 // Klickverhalten bei Cluster-Zoom und Selektion
+// Registrierung eines Event-Listeners auf einfache Mausklicks (linke Maustaste)
 map.on('singleclick', evt => {
-  let handled = false;
+  let handled = false; // Flag, um zu prüfen, ob bereits eine Aktion (z. B. Cluster-Zoom) ausgeführt wurde
 
+  // Durchsuche alle Features unter dem Mausklick (Pixel), um ggf. ein Cluster zu erkennen
   map.forEachFeatureAtPixel(evt.pixel, feature => {
-    const clustered = feature.get('features');
+    const clustered = feature.get('features'); // Prüfe, ob das Feature ein Cluster (mit Sub-Features) ist
+
+    // Falls es sich um ein Cluster mit mehr als einem Feature handelt
     if (clustered && clustered.length > 1) {
-      const extent = ol.extent.createEmpty();
-      clustered.forEach(f => ol.extent.extend(extent, f.getGeometry().getExtent()));
-      map.getView().fit(extent, { padding: [40, 40, 40, 40], maxZoom: 17, duration: 400 });
-      handled = true;
+      const extent = ol.extent.createEmpty(); // Erzeuge ein leeres Ausdehnungsrechteck
+
+      // Berechne die kombinierte Ausdehnung aller Features im Cluster
+      clustered.forEach(f =>
+        ol.extent.extend(extent, f.getGeometry().getExtent())
+      );
+
+      // Zoome die Karte so, dass alle enthaltenen Features sichtbar sind
+      map.getView().fit(extent, {
+        padding: [40, 40, 40, 40], // Innenabstand zum Kartenrand
+        maxZoom: 17,               // Zoom nicht stärker als Level 17
+        duration: 400              // Animationsdauer in Millisekunden
+      });
+
+      handled = true; // Markiere, dass das Event verarbeitet wurde
     }
   });
-  if (handled) return;
 
+  if (handled) return; // Wenn ein Cluster-Zoom durchgeführt wurde, Abbruch (keine Selektion)
+
+  // Initialisiere leeres Array, um die Features unter dem Klickpunkt zu speichern
   const feats = [];
+
+  // Durchsuche erneut alle Features unter dem Mausklick
   map.forEachFeatureAtPixel(evt.pixel, feature => {
+    // Extrahiere Sub-Features aus Clustern oder verwende das einzelne Feature selbst
     const fs = feature.get('features') || [feature];
-    feats.push(...fs);
+    feats.push(...fs); // Füge alle betroffenen Features zur Liste hinzu
   });
 
+  // Wenn keine Features gefunden wurden → Nichts zu tun
   if (feats.length === 0) return;
 
+  // Falls die Shift-Taste NICHT gedrückt ist, leere die aktuelle Auswahl
   if (!evt.originalEvent.shiftKey) selectedFeatures.clear();
 
+  // Iteriere über alle betroffenen Features 
   feats.forEach(f => {
     if (selectedFeatures.getArray().includes(f)) {
+      // Wenn das Feature bereits ausgewählt ist, entferne es (mit shift))
       if (evt.originalEvent.shiftKey) selectedFeatures.remove(f);
     } else {
+      // Ansonsten zur Auswahl hinzufügen
       selectedFeatures.push(f);
     }
   });
 
+  // Aktualisiere die Darstellung aller Features, um Selektion visuell anzuzeigen
   refreshAllStyles();
 });
+
 
 
 // Tooltip mit Feature-Informationen bei Mausbewegung
@@ -213,7 +239,7 @@ function handleFileUpload(file) {
 
     // Einlesen und Konvertieren der Features in Web Mercator-Projektion
     const features = format.readFeatures(e.target.result, { featureProjection: 'EPSG:3857'});
-    
+
     // Dateiname ohne Endung
     const baseName = file.name.replace(/\.[^/.]+$/, ""); 
 
@@ -283,9 +309,7 @@ function handleFileUpload(file) {
   reader.readAsText(file); // Startet das Einlesen des Dateiinhalts der Dateien
 }
 
-// Export ausgewählter Features als GeoJSON-Datei
-// Event-Listener für den Export-Button: Wird ausgelöst, wenn der Nutzer auf „Exportieren“ klickt
-// Führt eine Prüfung auf vorhandene Selektion durch und startet dann den Download
+// Export ausgewählter Features als GeoJSON-Datei bei drücken von "exportieren"
 document.getElementById('exportSelection').addEventListener('click', () => {
   const selected = selectedFeatures.getArray(); // Alle aktuell ausgewählten Features abrufen
 
@@ -315,7 +339,7 @@ document.getElementById('exportSelection').addEventListener('click', () => {
   link.href = url;
   link.download = filename.endsWith('.geojson') ? filename : filename + '.geojson'; // Endung sicherstellen
   link.click(); // Simuliere Klick auf den Link (startet Download)
-m
+
   // Bereinige URL nach dem Download-Vorgang
   URL.revokeObjectURL(url);
 });
